@@ -8,15 +8,13 @@ werkzeug.cached_property = werkzeug.utils.cached_property
 from flask_restplus import Api, Resource, Namespace, fields, reqparse
 
 
-
-
 # description of application
 description = '''This API endpoint accepts files sent after an MBOT completes
 a run. It then will write the file to a MongoDB database.'''
 
 # start application
 flask_app = Flask(__name__, static_url_path='/v1/api/')
-flask_app.config['UPLOAD_FOLDER'] = os.path.abspath('uploads/')
+flask_app.config['UPLOAD_FOLDER'] = os.path.abspath('static/uploads')
 flask_app.config['EXTENSION'] = 'txt'
 
 # setup security
@@ -55,23 +53,29 @@ def check_extension(filename, extension):
 # description of application
 api = Api(
 	app=flask_app,
-	endpoint='/v1/api/',
-	doc='/v1/api-docs/',
+	endpoint='/MBOT/v1/api/',
+	doc='/MBOT/v1/api-docs/',
 	version = '0.0.1',
 	title = 'MBOT API Endpoint',
 	description = description
 	)
 
 # Separate namespace for MBOT
-mbot_namespace = api.namespace('MBOT', description= 'API to upload a log file from an MBOT robot')
+mbot_namespace = api.namespace('MBOT', description= 'Upload and pull down log files from MBOT')
 @mbot_namespace.route('/v1/api/log')
 class api_mplevy(Resource):
     '''API RESOURCE FOR MBOT'''
     # setup documentation
-    @mbot_namespace.doc(params={'logfile':'Must be a .log file.'})
+    logfile_payload = {}
+    logfile_payload['description'] = 'Data type must be a .log file.'
+    logfile_payload['name'] = 'logfile'
+    logfile_payload['type'] = 'file'
+    logfile_payload['in'] = 'path'
+    print(logfile_payload)
+    @mbot_namespace.doc(params={'logfile': logfile_payload})
     @mbot_namespace.response(200, 'Succcess')
     @mbot_namespace.response(404, 'No log file name detected')
-    @mbot_namespace.response(406, 'Unknown Request meow')
+    @mbot_namespace.response(406, 'Unknown Request')
     @mbot_namespace.response(422, 'Incorrect file type')
     @cross_origin()
 
@@ -100,7 +104,7 @@ class api_mplevy(Resource):
             abort(422, 'Incorrect file type')
     
     # def get(self):
-    #     # get the requested file and pass it back
+        
 
 
 def main():

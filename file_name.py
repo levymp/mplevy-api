@@ -14,6 +14,10 @@ def get_pst_time():
     return pstDateTime
 
 def gen_file_name(extension):
+    # check if there is a . at extension... if not add one
+    if isinstance(extension, str) and extension[0] != '.':
+        extension = '.' + extension
+    # return file name
     return str(uuid.uuid1()) + '%' + get_pst_time() + extension
 
 
