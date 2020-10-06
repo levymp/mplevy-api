@@ -13,7 +13,7 @@ def get_pst_time():
     pstDateTime=date.strftime(date_format)
     return pstDateTime
 
-def gen_file_name(extension):
+def file_name(extension):
     # check if there is a . at extension... if not add one
     if isinstance(extension, str) and extension[0] != '.':
         extension = '.' + extension
@@ -23,4 +23,4 @@ def gen_file_name(extension):
 
 if __name__ == "__main__":
     # simple example
-    print(gen_file_name('.txt'))
+    print(file_name('.txt'))

@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, abort, jsonify
 from flask_swagger import swagger
 from flask_cors import CORS, cross_origin
-from file_name import gen_file_name
+from file_name import file_name
 import werkzeug
 werkzeug.cached_property = werkzeug.utils.cached_property
 from flask_restplus import Api, Resource, Namespace, fields, reqparse
@@ -13,35 +13,35 @@ description = '''This API endpoint accepts files sent after an MBOT completes
 a run. It then will write the file to a MongoDB database.'''
 
 # start application
-flask_app = Flask(__name__, static_url_path='/v1/api/')
-flask_app.config['UPLOAD_FOLDER'] = os.path.abspath('static/uploads')
-flask_app.config['EXTENSION'] = 'txt'
+flask_api = Flask(__name__, static_url_path='/v1/api/')
+flask_api.config['UPLOAD_FOLDER'] = os.path.abspath('static/uploads')
+flask_api.config['EXTENSION'] = 'txt'
 
 # setup security
-CORS(flask_app)
+CORS(flask_api)
 
 # helper functions for abort
-@flask_app.errorhandler(403)
+@flask_api.errorhandler(403)
 def handle_403(e):
 	return jsonify(error=str(e)), 403
 
-@flask_app.errorhandler(404)
+@flask_api.errorhandler(404)
 def handle_404(e):
 	return jsonify(error=str(e)), 404
 
-@flask_app.errorhandler(406)
+@flask_api.errorhandler(406)
 def handle_406(e):
 	return jsonify(error=str(e)), 406
 
-@flask_app.errorhandler(422)
+@flask_api.errorhandler(422)
 def handle_422(e):
 	return jsonify(error=str(e)), 422
 
-@flask_app.errorhandler(500)
+@flask_api.errorhandler(500)
 def handle_500(e):
 	return jsonify(error=str(e)), 500
 
-@flask_app.errorhandler(501)
+@flask_api.errorhandler(501)
 def handle_501(e):
 	return jsonify(error=str(e)), 501
 
@@ -52,7 +52,7 @@ def check_extension(filename, extension):
 
 # description of application
 api = Api(
-	app=flask_app,
+	app=flask_api,
 	endpoint='/MBOT/v1/api/',
 	doc='/MBOT/v1/api-docs/',
 	version = '0.0.1',
@@ -93,11 +93,11 @@ class api_mplevy(Resource):
             abort(404, description='No log file name detected')
 
         # check if this is the correct extension
-        if file and check_extension(file.filename, flask_app.config['EXTENSION']):
+        if file and check_extension(file.filename, flask_api.config['EXTENSION']):
             # set a unique file name
-            file_name = gen_file_name(flask_app.config['EXTENSION'])
+            file_name = file_name(flask_api.config['EXTENSION'])
             # save the file to the uploads folder
-            file.save(os.path.join(flask_app.config['UPLOAD_FOLDER'], file_name))
+            file.save(os.path.join(flask_api.config['UPLOAD_FOLDER'], file_name))
             return jsonify({'FILE NAME': file_name, 'success': True})
         else:
             abort(422, 'Incorrect file type')
@@ -107,7 +107,7 @@ class api_mplevy(Resource):
 
 
 def main():
-    flask_app.run(port=8505, debug=True)
+    flask_api.run(port=8505, debug=True)
 
 
 if __name__ == "__main__":
