@@ -71,7 +71,6 @@ class api_mplevy(Resource):
     logfile_payload['name'] = 'logfile'
     logfile_payload['type'] = 'file'
     logfile_payload['in'] = 'path'
-    print(logfile_payload)
     @mbot_namespace.doc(params={'logfile': logfile_payload})
     @mbot_namespace.response(200, 'Succcess')
     @mbot_namespace.response(404, 'No log file name detected')
@@ -108,7 +107,7 @@ class api_mplevy(Resource):
 
 
 def main():
-    flask_app.run(host='0.0.0.0', port=8503, debug=True)
+    flask_app.run(host='localhost', port=8503, debug=False)
 
 
 if __name__ == "__main__":
