@@ -107,7 +107,7 @@ class api_mplevy(Resource):
 
 
 def main():
-    flask_app.run(host='localhost', port=8503, debug=False)
+    flask_app.run(port=8505, debug=True)
 
 
 if __name__ == "__main__":
