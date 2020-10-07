@@ -15,7 +15,7 @@ a run. It then will write the file to a MongoDB database.'''
 # start application
 flask_api = Flask(__name__, static_url_path='/MBOT/v1/api')
 flask_api.config['UPLOAD_FOLDER'] = os.path.abspath('static/uploads')
-flask_api.config['EXTENSION'] = 'txt'
+flask_api.config['EXTENSION'] = 'log'
 
 # setup security
 CORS(flask_api)
@@ -54,7 +54,7 @@ def check_extension(filename, extension):
 api = Api(
 	app=flask_api,
 	endpoint='/MBOT/v1/api/',
-	doc='/MBOT/v1/api/',
+	doc='/MBOT/v1/api-docs/',
 	version = '0.0.1',
 	title = 'MBOT API Endpoint',
 	description = description
