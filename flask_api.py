@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 from flask import Flask, request, abort, jsonify
 from flask_swagger import swagger
@@ -13,7 +14,7 @@ description = '''This API endpoint accepts files sent after an MBOT completes
 a run. It then will write the file to a MongoDB database.'''
 
 # start application
-flask_api = Flask(__name__, static_url_path='/MBOT/v1/api')
+flask_api = Flask(__name__, static_url_path='/api/')
 flask_api.config['UPLOAD_FOLDER'] = os.path.abspath('static/uploads')
 flask_api.config['EXTENSION'] = 'log'
 
@@ -53,16 +54,16 @@ def check_extension(filename, extension):
 # description of application
 api = Api(
 	app=flask_api,
-	endpoint='/MBOT/v1/api/',
-	doc='/MBOT/v1/api-docs/',
+	endpoint='/api/',
+	doc='/api/docs/',
 	version = '0.0.1',
-	title = 'MBOT API Endpoint',
+	title = 'Michael\'s API',
 	description = description
 	)
 
 # Separate namespace for MBOT
-mbot_namespace = api.namespace('MBOT', description= 'Upload and pull down log files from MBOT')
-@mbot_namespace.route('/v1/api/log')
+mbot_namespace = api.namespace('MBOT', description= 'Upload and pull down log files from MBOT', path='/', ordered=True)
+@mbot_namespace.route('/api/mbot/v1/log')
 class api_mplevy(Resource):
     '''API RESOURCE FOR MBOT'''
     # setup documentation
