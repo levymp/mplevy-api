@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import os
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort, jsonify #, render_template
 from flask_swagger import swagger
 from flask_cors import CORS, cross_origin
 from file_name import file_name
 import werkzeug
 werkzeug.cached_property = werkzeug.utils.cached_property
-from flask_restplus import Api, Resource, Namespace, fields, reqparse
+from flask_restplus import Api, Resource, Namespace, fields, reqparse #, apidoc
 
 
 # description of application
@@ -15,7 +15,7 @@ a run. It then will write the file to a MongoDB database.'''
 
 # start application
 flask_api = Flask(__name__, static_url_path='/api/')
-flask_api.config['UPLOAD_FOLDER'] = os.path.abspath('static/uploads')
+flask_api.config['UPLOAD_FOLDER'] = os.path.abspath('../data/mbot')
 flask_api.config['EXTENSION'] = 'log'
 
 # setup security
@@ -51,15 +51,25 @@ def check_extension(filename, extension):
     '''Check if the correct extension has been given'''
     return filename.rsplit('.', 1)[1].lower() == extension
 
+# @apidoc.apidoc.add_app_template_global
+# def swagger_static(filename):
+#     return "/api/swaggerui/{0}".format(filename)
+
 # description of application
 api = Api(
 	app=flask_api,
 	endpoint='/api/',
-	doc='/api/docs/',
+	doc='/api/',
 	version = '0.0.1',
 	title = 'Michael\'s API',
 	description = description
 	)
+
+
+# @api.documentation
+# def custom_ui():
+#     return render_template("swagger-ui.html", title=api.title, specs_url="/api/swagger.json")
+
 
 # Separate namespace for MBOT
 mbot_namespace = api.namespace('MBOT', description= 'Upload and pull down log files from MBOT', path='/', ordered=True)
