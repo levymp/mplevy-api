@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 import os
-from flask import Flask, request, abort, jsonify #, render_template
+from flask import Flask, request, abort, jsonify, render_template
 from flask_swagger import swagger
 from flask_cors import CORS, cross_origin
 from file_name import file_name
 import werkzeug
 werkzeug.cached_property = werkzeug.utils.cached_property
-from flask_restplus import Api, Resource, Namespace, fields, reqparse #, apidoc
-
+from flask_restplus import Api, Resource, Namespace, fields, reqparse, apidoc
+import subprocess
+from pathlib import Path
 
 # description of application
 description = '''This API endpoint accepts files sent after an MBOT completes
@@ -15,7 +16,8 @@ a run. It then will write the file to a MongoDB database.'''
 
 # start application
 flask_api = Flask(__name__, static_url_path='/api/')
-flask_api.config['UPLOAD_FOLDER'] = os.path.abspath('../data/mbot')
+flask_api.config['UPLOAD_DIRECTORY'] = Path('/home/michaellevy/data/mbot/log/')
+flask_api.config['PICKLE_DIRECTORY'] = Path('/home/michaellevy/data/mbot/pickle/')
 flask_api.config['EXTENSION'] = 'log'
 
 # setup security
@@ -53,7 +55,7 @@ def check_extension(filename, extension):
 
 # @apidoc.apidoc.add_app_template_global
 # def swagger_static(filename):
-#     return "/api/swaggerui/{0}".format(filename)
+#     return "./swaggerui/{0}".format(filename)
 
 # description of application
 api = Api(
@@ -68,7 +70,7 @@ api = Api(
 
 # @api.documentation
 # def custom_ui():
-#     return render_template("swagger-ui.html", title=api.title, specs_url="/api/swagger.json")
+#     return render_template("swagger-ui.html", title=api.title, specs_url="./swagger.json")
 
 
 # Separate namespace for MBOT
@@ -77,12 +79,12 @@ mbot_namespace = api.namespace('MBOT', description= 'Upload and pull down log fi
 class api_mplevy(Resource):
     '''API RESOURCE FOR MBOT'''
     # setup documentation
-    logfile_payload = {}
-    logfile_payload['description'] = 'Data type must be a .log file.'
-    logfile_payload['name'] = 'logfile'
-    logfile_payload['type'] = 'file'
-    logfile_payload['in'] = 'path'
-    @mbot_namespace.doc(params={'logfile': logfile_payload})
+    post_logfile_payload = {}
+    post_logfile_payload['description'] = 'Data type must be a .log file.'
+    post_logfile_payload['name'] = 'logfile'
+    post_logfile_payload['type'] = 'file'
+    post_logfile_payload['in'] = 'path'
+    @mbot_namespace.doc(params={'logfile': post_logfile_payload})
     @mbot_namespace.response(200, 'Succcess')
     @mbot_namespace.response(404, 'No log file name detected')
     @mbot_namespace.response(406, 'Unknown Request')
@@ -106,15 +108,26 @@ class api_mplevy(Resource):
         # check if this is the correct extension
         if file and check_extension(file.filename, flask_api.config['EXTENSION']):
             # set a unique file name
-            file_name = file_name(flask_api.config['EXTENSION'])
+            name = file_name(flask_api.config['EXTENSION'])
             # save the file to the uploads folder
-            file.save(os.path.join(flask_api.config['UPLOAD_FOLDER'], file_name))
-            return jsonify({'FILE NAME': file_name, 'success': True})
+            file.save(flask_api.config['UPLOAD_DIRECTORY'], name)
+            subprocess.Popen(['lcm-export', name, '--lcmtypes', '~/MBOT-RPI/python/'], cwd=flask_api.config['PICKLE_DIRECTORY'])
+            return jsonify({'filename': name, 'success': True})
         else:
             abort(422, 'Incorrect file type')
     
-    # def get(self):
-        
+    get_logfile_payload = {}
+    get_logfile_payload['description'] = 'Just give a robot name + date'
+    get_logfile_payload['name'] = 'filename'
+    get_logfile_payload['type'] = 'string'
+    get_logfile_payload['in'] = 'query'
+    @mbot_namespace.doc(params={'filename': get_logfile_payload})
+    @cross_origin()
+    def get(self):
+        if 'filename' in request.args:
+            filename = str(request.args['filename'])
+        else:
+            abort(404, 'NO FILE NAME GIVEN!')
 
 
 def main():
