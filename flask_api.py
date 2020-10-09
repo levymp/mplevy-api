@@ -7,7 +7,7 @@ from pathlib import Path
 from flask import Flask, request, abort, jsonify, render_template, send_from_directory
 from flask_swagger import swagger
 from flask_cors import CORS, cross_origin
-from api_utils import get_file_info, update_mbot_table, get_file_address
+from api_utils import get_file_info, update_mbot_table, get_file_address, delete_run
 import werkzeug
 werkzeug.cached_property = werkzeug.utils.cached_property
 from flask_restplus import Api, Resource, Namespace, fields, reqparse, apidoc
@@ -140,7 +140,7 @@ class api_mplevy(Resource):
             # test if pickle was written
             r = update_mbot_table('MICHAEL', file_info)
             if r == 0:
-                return jsonify({'RunId': file_info['RunId'],
+                return jsonify({'runId': file_info['runId'],
                                 'Results': file_info['result']})
             elif r == -1:
                 return abort(422, 'INTERNAL SERVER ERROR!')
@@ -150,8 +150,8 @@ class api_mplevy(Resource):
             abort(422, 'Incorrect file type')
 
     # setup get
-    RunId_payload = {'description': 'RunId for specific file',
-                            'name': 'RunId',
+    runId_payload = {'description': 'runId for specific file',
+                            'name': 'runId',
                             'type': 'string',
                             'in': 'query'}
     type_payload = {'description': 'Request a "log" or "pkl" file.',
@@ -159,37 +159,60 @@ class api_mplevy(Resource):
                             'type': 'string',
                             'in': 'query'}
     
-    @mbot_namespace.doc(params={'RunId': RunId_payload,
-                            'file': type_payload})
+    @mbot_namespace.doc(params={'runId': runId_payload,
+                            'type': type_payload})
+    @mbot_namespace.response(200, 'Succcess')
+    @mbot_namespace.response(404, 'INCORRECT TYPE/RUN ID GIVEN')
+    @mbot_namespace.response(406, 'Unknown Request')
+    @mbot_namespace.response(500, 'INTERNAL SERVER ERROR')
     @cross_origin()
-
     def get(self):
         '''RETURN LOG FILE BACK'''
-        if 'RunId' not in request.args:
-            abort(404, 'NO RUN ID GIVEN!')
+        if 'runId' not in request.args:
+            abort(404, 'NO runId GIVEN!')
         elif 'type' not in request.args:
-            abort(404, 'NO TYPE GIVEN')
+            abort(404, 'NO type GIVEN!')
         
-        RunId = int(request.args['RunId'])
-        print(RunId)
+        runId = int(request.args['runId'])
 
         # get path
         if request.args['type'] == 'log':
-            file_path = get_file_address(RunId, 'LOG PATH')
+            file_path = get_file_address(runId, 'LOG PATH')
         elif request.args['type'] == 'pkl':
-            file_path = get_file_address(RunId, 'PICKLE PATH')
+            file_path = get_file_address(runId, 'PICKLE PATH')
         else:
             abort(404, 'INCORRECT TYPE GIVEN MUST BE "log" or "pkl"')
 
         # type to send the file
         if not isinstance(file_path, int):
             try:
-                return send_from_directory(str(file_path.parent), str(file_path.name), as_attachment=False)
+                return send_from_directory(str(file_path.parent), str(file_path.name), mimetype='application/octet-stream')
             except Exception as e:
-                abort(422, 'INTERNALL ERROR: ' + str(e))
+                abort(500, 'INTERNALL ERROR: ' + str(e))
         else:
-            abort(404, 'Incorrect RunId Given! ' + str(RunId))
+            abort(404, 'Incorrect runId Given! ' + str(runId))
+    
 
+    # delete
+    delete_payload = {'description': 'Delete a Run',
+                            'name': 'RunId',
+                            'type': 'string',
+                            'in': 'query'}
+    
+    @mbot_namespace.doc(params={'runId': delete_payload})
+    @mbot_namespace.response(200, 'Succcess')
+    @mbot_namespace.response(404, 'INCORRECT runId GIVEN')
+    @cross_origin()
+    def delete(self):
+        '''DELETE A RUN'''
+        if 'runId' not in request.args:
+            abort(404, 'NO RUN ID GIVEN!')
+        
+        runId = int(request.args['runId'])
+        if not delete_run(runId):
+            return jsonify({'runId': runId, 'DeletionSuccess': True})
+        else:
+            return jsonify({'runId': runId, 'DeletionSuccess': False})
 
 def main():
     flask_api.run(port=8505, debug=True)

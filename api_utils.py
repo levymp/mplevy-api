@@ -1,5 +1,6 @@
 import os
 import uuid
+import json
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
@@ -94,31 +95,62 @@ def update_mbot_table(botname, file_info):
     if _PICKLE.is_file():
         # read pickle and update
         df = pd.read_pickle(_PICKLE)
-        # keep track of RunId
-        RunId = len(df)
-        df.loc[RunId] = result
+        # keep track of runId
+        runId = len(df)
+        df.loc[runId] = result
         # write pickle
         df.to_pickle(_PICKLE)
-        file_info['RunId'] = RunId
+        file_info['runId'] = runId
         file_info['result'] = result
         return 0
     else:
         return -2
 
-def get_file_address(RunId, column):
+def get_file_address(runId, column):
     df = pd.read_pickle(_PICKLE)
-    # check for valid RunId
-    if RunId < len(df) and RunId >= 0:
-        return Path(df.loc[0]['PICKLE PATH'])
+    
+    # check for valid runId
+    if runId < len(df) and runId >= 0:
+        return Path(df.loc[runId][column])
     else:
         return -1
 
+def get_json_from_pickle(runId):
+    df = pd.read_pickle(_PICKLE)
 
-
-
-if __name__ == "__main__":
-    payload = get_file_info()
-    r = update_mbot_table('MICHAEL', payload)
-    print(r)
-
+    # check for valid runId
+    if runId < len(df) and runId >= 0:
+        new_path = Path(df.loc[runId]['PICKLE PATH'])
+    else:
+        return -1
     
+    # load new df write to json
+    df_new = pd.read_pickle(new_path)
+
+    return json.dumps(df_new, indent=4)
+
+
+def delete_run(runId):
+    if isinstance(runId, str):
+        runId = int(runId)
+    
+    # read in df
+    df = pd.read_pickle(_PICKLE)
+    # check if valid runId
+    if runId < len(df) and runId >= 0:
+        # delete log file
+        log = Path(df.loc[runId]['LOG PATH'])
+        log.unlink(missing_ok=True)
+
+        # delete pkl file
+        pkl = Path(df.loc[runId]['PICKLE PATH'])
+        pkl.unlink(missing_ok=True)
+
+        # delete row
+        df = df.drop([runId])
+        # overwrite pickle
+        df = df.reset_index(drop=True)
+        df.to_pickle(_PICKLE)
+        return 0
+    else:
+        return -1

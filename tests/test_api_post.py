@@ -13,25 +13,29 @@ payload = {'logfile': file}
 # url = 'https://api.mplevy.com/api/mbot/v1/log'
 url = 'http://127.0.0.1:8505/api/mbot/v1/log'
 
-params = {'RunId': '0', 'type': 'pkl'}
+
+runId = 0
+params = {'runId': runId, 'type': 'pkl'}
+
+delparam = {'runId': 0}
 
 # r = requests.post(url, files=payload)
 r = requests.get(url, params=params)
+# r = requests.delete(url, params=delparam)
 
-df = pd.read_pickle(r.content())
+# path to temporary file and delete previous ones
 
+
+file_path = Path('/tmp/mbot_int')
+file_path.unlink(missing_ok=True)
+# read in content
+with open(file_path, 'wb') as fd:
+    fd.write(r.content)
+# read in df
+df = pd.read_pickle(file_path)
+
+# delete file
+file_path.unlink(missing_ok=False)
 print(df.keys())
-print(r.status_code)
 print(r.json())
 file.close()
-
-# # ['BOT', 'PICKLE NAME', 'LOG NAME', 'LOG PATH', 'PICKLE PATH']
-# pickle = Path('/home/michaellevy/data/mbot/mbot_table.pkl')
-# df = pd.read_pickle(pickle)
-# print(df.loc[0]['PICKLE PATH'])
-# file_path = Path(df.loc[0]['PICKLE PATH'])
-# print(file_path.parent)
-# print(file_path.name)
-# df.to_pickle(pickle)
-# print(df.head())
-# print(pickle.absolute())
