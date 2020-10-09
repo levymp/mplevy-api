@@ -139,14 +139,16 @@ def delete_run(runId):
     # check if valid runId
     if runId < len(df) and runId >= 0:
         
-        
         # delete log file
         log = Path(df.loc[runId]['LOG PATH'])
         log.unlink(missing_ok=True)
 
-        # delete pkl file
-        df.loc[runId]['PICKLE PATH']
-        pkl = Path()
+        # if pickle write failed... check if it is in log directory
+        pkl = df.loc[runId]['PICKLE PATH']
+        if pkl == '-':
+            pkl = Path(df.loc[3]['LOG PATH'].replace('.', '_') + '.pkl')
+        
+        # delete
         pkl.unlink(missing_ok=True)
 
         # delete row

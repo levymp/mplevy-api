@@ -5,9 +5,6 @@ from pathlib import Path
 
 
 #### RANDOM 
-df = pd.read_pickle(Path('/home/michaellevy/data/mbot/mbot_table.pkl'))
-print(df.loc[3])
-print(df.loc[3]['LOG PATH'].replace('.', '_') + '.pkl')
 
 
 # # open file
