@@ -2,12 +2,12 @@
 import os
 import time
 import subprocess
-from shutil import move
 from pathlib import Path
+from shutil import move, copy
 from flask_swagger import swagger
 from flask_cors import CORS, cross_origin
 from flask import Flask, request, abort, jsonify, render_template, send_from_directory
-from api_utils import get_file_info, update_mbot_table, get_file_address, delete_run
+from api_utils import get_file_info, update_mbot_table, get_file_address, delete_run, get_time
 import werkzeug
 werkzeug.cached_property = werkzeug.utils.cached_property
 from flask_restplus import Api, Resource, Namespace, fields, reqparse, apidoc
@@ -93,9 +93,16 @@ class api_mplevy(Resource):
                             'name': 'name',
                             'type': 'string',
                             'in': 'query'}
+    desc_payload = {'description': 'Notes on the Run (optional)',
+                            'name': 'description',
+                            'type': 'string',
+                            'in': 'query'}
+
+    }
     # setup parameters
     @mbot_namespace.doc(params={'logfile': logfile_payload, 
-                                'name': botname_payload})
+                                'name': botname_payload},
+                                'description': desc_payload)
     # different responses
     @mbot_namespace.response(200, 'Succcess')
     @mbot_namespace.response(404, 'No log file name detected')
@@ -105,12 +112,21 @@ class api_mplevy(Resource):
 
     def post(self):
         '''POST A LOG FILE'''
-        # check if file is in the request
+        # check if file and name is in the request
         if 'logfile' not in request.files:
             return abort(406, 'Unknown Request')
-        if 'name' not in request.args:
-            return abort(404, 'No name given')
+        elif 'name' not in request.args:
+            return abort(404, 'No name given!')
         
+        # assign name
+        botname = request.args['name']
+
+        # assign description
+        if 'description' not in request.args:
+            description = '-'
+        else: 
+            description = request.args['description'].upper()
+
         # pull the log file from the request
         file = request.files['logfile']
         
@@ -122,32 +138,43 @@ class api_mplevy(Resource):
         if file and check_extension(file.filename, 'log'):
             
             # Get all file names and paths
-            file_info = get_file_info()
+            time = get_time()
+            
+            # create directories and file names for prod and backup
+            prod_file_info = get_file_info(time, prod=True)
+            backup_file_info = get_file_info(time, prod=False)
             
             # save log file
-            file.save(file_info['log']['path'])
-            
+            file.save(prod_file_info['log']['path'])
+            file.save(backup_file_info.['log']['path'])
+
             # write pickle in log directory
             lcm_result = subprocess.Popen(
-                ['lcm-export', file_info['log']['name'], '--lcmtypes', '/home/michaellevy/MBOT-RPI/python/', '-p'],
-                cwd=file_info['log']['path'].parents[0])
+                ['lcm-export', prod_file_info['log']['name'], '--lcmtypes', '/home/michaellevy/MBOT-RPI/python/', '-p'],
+                cwd=prod_file_info['log']['path'].parents[0])
             
             # check if pickle is written and then move it to correct directory
-            for i in range(10):
+            # wait for 15 seconds
+            for i in range(150):
                 # if file appears move it
-                pickle_flg = os.path.exists(str(file_info['pkl_initial']['path'].absolute()))
+                pickle_flg = os.path.exists(str(prod_file_info['pkl_initial']['path'].absolute()))
                 if pickle_flg:
-                    move(src=file_info['pkl_initial']['path'].absolute(), dst=file_info['pkl_final']['path'].absolute())
+                    copy
+                    # move to pickle to prod folder
+                    move(src=prod_file_info['pkl_initial']['path'].absolute(), dst=prod_file_info['pkl_final']['path'].absolute())
+                    # copy from prod to backup
+                    copy(src=prod_file_info['pkl_final']['path'].absolute(), dst=backup_file_info['pkl_final']['path'].absolute())
                     break
-                
-                # sleep for a second while we wait for lcm-export to finish
-                time.sleep(1)
+                # sleep for a .1 seconds while we wait for lcm-export to finish
+                time.sleep(.1)
 
             # test if pickle was written
-            r = update_mbot_table(request.args['name'], file_info)
+            r = update_mbot_table(botname, description, backup_file_info, prod=False)
+            r = update_mbot_table(botname, description, prod_file_info, prod=True)
+
             if r == 0:
-                return jsonify({'runId': file_info['runId'],
-                                'Results': file_info['result']})
+                return jsonify({'runId': prod_file_info['runId'],
+                                'Results': prod_file_info['result']})
             elif r == -1:
                 return abort(422, 'INTERNAL SERVER ERROR!')
             elif r == -2:

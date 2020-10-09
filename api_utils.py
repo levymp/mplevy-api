@@ -4,13 +4,18 @@ import json
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
-from pytz import timezone, utc
+from pytz import timezone
 
 # Global Directories
-_ROOT = Path('/home/michaellevy/data/mbot/')
-_LOG = _ROOT.joinpath('log')
-_PKL = _ROOT.joinpath('pickle')
-_PICKLE = Path('/home/michaellevy/data/mbot/mbot_table.pkl')
+_ROOT = Path('/home/michaellevy/data/')
+
+# Setup Prod and Backup Directories
+_PROD = _ROOT.joinpath('prod/mbot/')
+_BACKUP = _ROOT.joinpath('backup/mbot/')
+
+# Setup Pickle Data Table
+_PICKLE = _PROD.joinpath('mbot_table.pkl')
+
 
 def get_time():
     # current time in EST
@@ -22,8 +27,19 @@ def get_time():
 
     return [yyyy_mm_dd, hh_mm_ss]
 
-def get_file_info():
+def get_file_info(time, prod):
     # return file name
+    
+    if not isinstance(prod, bool):
+        return -1 
+
+    if prod is True:
+        _LOG = _PROD.joinpath('log')
+        _PKL = _PROD.joinpath('pickle')
+    else:
+        _LOG = _BACKUP.joinpath('log')
+        _PKL = _BACKUP.joinpath('pickle')
+
     time = get_time()
     
     # yyyy-mm-dd-H:M:S
@@ -55,87 +71,86 @@ def get_file_info():
 
     return payload
 
-def update_mbot_table(botname, file_info):
+def update_mbot_table(botname, description,file_info, prod):
     '''Append File Structure Lookup Pandas DataFrame'''
     if not isinstance(botname, str): 
         return -1
     elif not isinstance(file_info, dict):
         return -1
+    elif not isinstance()
     
-    # COLUMNS
-    # ['BOT NAME', 'PICKLE NAME', 'PICKLE PATH', 'LOG NAME', 'LOG PATH']
+    # COLUMNS TO APPEND
+    # ['BOT NAME', 'PICKLE NAME', 'PICKLE PATH', 'LOG NAME', 'LOG PATH', 'DESCRIPTION']
+    
+    # setup new row list to write to data frame
+    new_row = []
     
     # trim botname
     botname.replace(' ', '')
     
-    # append name
-    result = []
-    known_bots = ['MICHAEL', 'SAM', 'HAMIL', 'XUN']
-
-    if botname.upper() in known_bots:
-        result.append(botname.upper())
-    else: 
-        result.append('-')
+    # add botname
+    new_row.append(botname)
     
-    # check pickle
+    # check pickle and write to row
     if file_info['pkl_final']['path'].is_file():
-        result.append(file_info['pkl_final']['name'])
-        result.append(str(file_info['pkl_final']['path'].absolute()))
+        new_row.append(file_info['pkl_final']['name'])
+        new_row.append(str(file_info['pkl_final']['path'].absolute()))
     else:
-        result.extend(['-', '-'])
+        new_row.extend(['-', '-'])
         
-    # check log
+    # check log and write to row
     if file_info['log']['path'].is_file():
-        result.append(file_info['log']['name'])
-        result.append(str(file_info['log']['path'].absolute()))
+        new_row.append(file_info['log']['name'])
+        new_row.append(str(file_info['log']['path'].absolute()))
     else:
-        result.extend(['-', '-'])
+        new_row.extend(['-', '-'])
 
-    # read table
-    if _PICKLE.is_file():
+    # add description
+    new_row.append(description)
+
+    # check prod database
+    if prod is True: 
+        pickle_path = _PROD.joinpath('mbot_table.pkl')
+    else:
+        pickle_path = _BACKUP.joinpath('mbot_table.pkl')
+
+
+    # write to true table
+    if pickle_path.is_file():
         # read pickle and update
-        df = pd.read_pickle(_PICKLE)
+        df = pd.read_pickle(pickle_path)
         # keep track of runId
         runId = len(df)
-        df.loc[runId] = result
+        df.loc[runId] = new_row
         # write pickle
         df.to_pickle(_PICKLE)
         file_info['runId'] = runId
-        file_info['result'] = result
+        file_info['result'] = new_row
         return 0
     else:
         return -2
 
 def get_file_address(runId, column):
-    df = pd.read_pickle(_PICKLE)
-    
+    if _PICKLE.is_file():
+        df = pd.read_pickle(_PICKLE)
+    else: 
+        return -1
     # check for valid runId
     if runId < len(df) and runId >= 0:
         return Path(df.loc[runId][column])
     else:
         return -1
 
-def get_json_from_pickle(runId):
-    df = pd.read_pickle(_PICKLE)
-
-    # check for valid runId
-    if runId < len(df) and runId >= 0:
-        new_path = Path(df.loc[runId]['PICKLE PATH'])
-    else:
-        return -1
-    
-    # load new df write to json
-    df_new = pd.read_pickle(new_path)
-
-    return json.dumps(df_new, indent=4)
-
-
 def delete_run(runId):
     if isinstance(runId, str):
         runId = int(runId)
     
     # read in df
-    df = pd.read_pickle(_PICKLE)
+    if _PICKLE.is_file():
+        df = pd.read_pickle(_PICKLE)
+    else: 
+        return -1
+    
     # check if valid runId
     if runId < len(df) and runId >= 0:
         
