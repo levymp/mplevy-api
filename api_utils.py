@@ -77,7 +77,8 @@ def update_mbot_table(botname, description,file_info, prod):
         return -1
     elif not isinstance(file_info, dict):
         return -1
-    elif not isinstance()
+    elif not isinstance(prod, bool):
+        return -1
     
     # COLUMNS TO APPEND
     # ['BOT NAME', 'PICKLE NAME', 'PICKLE PATH', 'LOG NAME', 'LOG PATH', 'DESCRIPTION']
