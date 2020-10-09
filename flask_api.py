@@ -4,9 +4,9 @@ import time
 import subprocess
 from shutil import move
 from pathlib import Path
-from flask import Flask, request, abort, jsonify, render_template, send_from_directory
 from flask_swagger import swagger
 from flask_cors import CORS, cross_origin
+from flask import Flask, request, abort, jsonify, render_template, send_from_directory
 from api_utils import get_file_info, update_mbot_table, get_file_address, delete_run
 import werkzeug
 werkzeug.cached_property = werkzeug.utils.cached_property
@@ -89,9 +89,13 @@ class api_mplevy(Resource):
                             'name': 'logfile',
                             'type': 'file',
                             'in': 'path'}
-
+    botname_payload = {'description': 'Botname',
+                            'name': 'name',
+                            'type': 'string',
+                            'in': 'query'}
     # setup parameters
-    @mbot_namespace.doc(params={'logfile': logfile_payload})
+    @mbot_namespace.doc(params={'logfile': logfile_payload, 
+                                'name': botname_payload})
     # different responses
     @mbot_namespace.response(200, 'Succcess')
     @mbot_namespace.response(404, 'No log file name detected')
@@ -104,6 +108,8 @@ class api_mplevy(Resource):
         # check if file is in the request
         if 'logfile' not in request.files:
             return abort(406, 'Unknown Request')
+        if 'name' not in request.args:
+            return abort(404, 'No name given')
         
         # pull the log file from the request
         file = request.files['logfile']
@@ -138,7 +144,7 @@ class api_mplevy(Resource):
                 time.sleep(1)
 
             # test if pickle was written
-            r = update_mbot_table('MICHAEL', file_info)
+            r = update_mbot_table(request.args['name'], file_info)
             if r == 0:
                 return jsonify({'runId': file_info['runId'],
                                 'Results': file_info['result']})
@@ -205,9 +211,11 @@ class api_mplevy(Resource):
     @cross_origin()
     def delete(self):
         '''DELETE A RUN'''
+        # check if runId in argument
         if 'runId' not in request.args:
             abort(404, 'NO RUN ID GIVEN!')
         
+        # find runId and write
         runId = int(request.args['runId'])
         if not delete_run(runId):
             return jsonify({'runId': runId, 'DeletionSuccess': True})

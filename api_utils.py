@@ -138,12 +138,15 @@ def delete_run(runId):
     df = pd.read_pickle(_PICKLE)
     # check if valid runId
     if runId < len(df) and runId >= 0:
+        
+        
         # delete log file
         log = Path(df.loc[runId]['LOG PATH'])
         log.unlink(missing_ok=True)
 
         # delete pkl file
-        pkl = Path(df.loc[runId]['PICKLE PATH'])
+        df.loc[runId]['PICKLE PATH']
+        pkl = Path()
         pkl.unlink(missing_ok=True)
 
         # delete row
