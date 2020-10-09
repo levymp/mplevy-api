@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os
-import time
+from time import sleep
 import subprocess
 from pathlib import Path
 from shutil import move, copy
@@ -163,7 +163,7 @@ class api_mplevy(Resource):
                     copy(src=prod_file_info['pkl_final']['path'].absolute(), dst=backup_file_info['pkl_final']['path'].absolute())
                     break
                 # sleep for a .1 seconds while we wait for lcm-export to finish
-                time.sleep(.1)
+                sleep(.1)
 
             # test if pickle was written
             r = update_mbot_table(botname, description, backup_file_info, prod=False)
