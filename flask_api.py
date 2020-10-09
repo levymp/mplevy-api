@@ -218,9 +218,9 @@ class api_mplevy(Resource):
         # find runId and write
         runId = int(request.args['runId'])
         if not delete_run(runId):
-            return jsonify({'runId': runId, 'DeletionSuccess': True})
+            return jsonify({'runId': runId, 'Sucess': True})
         else:
-            return jsonify({'runId': runId, 'DeletionSuccess': False})
+            return jsonify({'runId': runId,'Sucess': False})
 
 def main():
     flask_api.run(port=8505, debug=True)
