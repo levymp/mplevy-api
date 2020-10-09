@@ -97,19 +97,16 @@ class api_mplevy(Resource):
                             'name': 'description',
                             'type': 'string',
                             'in': 'query'}
-
-    }
     # setup parameters
     @mbot_namespace.doc(params={'logfile': logfile_payload, 
-                                'name': botname_payload},
-                                'description': desc_payload)
+                                'name': botname_payload,
+                                'description': desc_payload})
     # different responses
     @mbot_namespace.response(200, 'Succcess')
     @mbot_namespace.response(404, 'No log file name detected')
     @mbot_namespace.response(406, 'Unknown Request')
     @mbot_namespace.response(422, 'Incorrect file type')
     @cross_origin()
-
     def post(self):
         '''POST A LOG FILE'''
         # check if file and name is in the request
@@ -118,10 +115,10 @@ class api_mplevy(Resource):
         elif 'name' not in request.args:
             return abort(404, 'No name given!')
         
-        # assign name
+        # assign name ENFORCED
         botname = request.args['name']
 
-        # assign description
+        # assign description OPTIONAL
         if 'description' not in request.args:
             description = '-'
         else: 
@@ -146,7 +143,7 @@ class api_mplevy(Resource):
             
             # save log file
             file.save(prod_file_info['log']['path'])
-            file.save(backup_file_info.['log']['path'])
+            file.save(backup_file_info['log']['path'])
 
             # write pickle in log directory
             lcm_result = subprocess.Popen(
