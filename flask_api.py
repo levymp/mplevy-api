@@ -208,6 +208,7 @@ class api_mplevy(Resource):
     @mbot_namespace.doc(params={'runId': delete_payload})
     @mbot_namespace.response(200, 'Succcess')
     @mbot_namespace.response(404, 'INCORRECT runId GIVEN')
+    @mbot_namespace.response(406, 'RunId was not deleted')
     @cross_origin()
     def delete(self):
         '''DELETE A RUN'''
@@ -220,7 +221,7 @@ class api_mplevy(Resource):
         if not delete_run(runId):
             return jsonify({'runId': runId, 'Sucess': True})
         else:
-            return jsonify({'runId': runId,'Sucess': False})
+            return abort(406, 'runId ' + str(runId) + 'was not deleted')
 
 def main():
     flask_api.run(port=8505, debug=True)
