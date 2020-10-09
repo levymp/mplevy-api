@@ -147,7 +147,10 @@ def delete_run(runId):
         pkl = df.loc[runId]['PICKLE PATH']
         if pkl == '-':
             pkl = Path(df.loc[3]['LOG PATH'].replace('.', '_') + '.pkl')
-        
+            print(pkl)
+        else:
+            pkl = Path(pkl)
+
         # delete
         pkl.unlink(missing_ok=True)
 
