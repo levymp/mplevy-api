@@ -19,8 +19,11 @@ url = 'http://127.0.0.1:8505/api/mbot/v1/log'
 # runId = 0
 # params = {'runId': runId, 'type': 'pkl'}
 # delparam = {'runId': 0}
-payload = {'logfile': file, 'name': 'CLASS FILE', 'description': 'convex_10mx10m_5cm' }
-r = requests.post(url, files=payload)
+
+payload = {'logfile': file}
+params_payload = {'name': 'CLASS FILE', 'description': 'convex_10mx10m_5cm' } 
+r = requests.post(url, files=payload, params=params_payload)
+
 # r = requests.get(url, params=params)
 # # r = requests.delete(url, params=delparam)
 
