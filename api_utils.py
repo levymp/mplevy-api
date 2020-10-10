@@ -124,7 +124,7 @@ def update_mbot_table(botname, description,file_info, prod):
         runId = len(df)
         df.loc[runId] = new_row
         # write pickle
-        df.to_pickle(_PICKLE)
+        df.to_pickle(pickle_path)
         file_info['runId'] = runId
         file_info['result'] = new_row
         print(new_row)
