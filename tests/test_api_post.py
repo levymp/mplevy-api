@@ -7,7 +7,7 @@ from pathlib import Path
 # define urls
 # BASE_URL = 'https://api.mplevy.com/api/mbot/v1/'
 
-BASE_URL = 'http://127.0.0.1:8505/api/mbot/v1/log'
+BASE_URL = 'http://127.0.0.1:8505/api/mbot/v1/'
 LOG_URL = BASE_URL + 'log'
 DIRECTORY_URL = BASE_URL + 'directory'
 
