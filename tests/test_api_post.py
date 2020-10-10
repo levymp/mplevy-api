@@ -20,7 +20,7 @@ def main():
     params_payload = {'name': 'CLASS FILE', 'description': 'convex_10mx10m_5cm' }
 
     # post file
-    r = requests.post(LOG_URL, files=payload, params=params_payload)
+    r = requests.post(LOG_URL, files=files_payload, params=params_payload)
 
     if r.status_code != 200:
         print(r.text)
