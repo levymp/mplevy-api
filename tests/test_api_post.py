@@ -25,10 +25,11 @@ def main():
     if r.status_code != 200:
         print(r.text)
         return -1
-
+    result_values = r.json()
+    runId = result_values['runId']
     # get file
 
-    r = requests.get(LOG_URL, params={'runId': r['runId']})
+    r = requests.get(LOG_URL, params={'runId': runId})
     file.close()
     # check response
     if r.status_code != 200:
@@ -62,7 +63,7 @@ def main():
     print(df.keys())
 
     # delete file
-    r = requests.delete(LOG_URL, params={'runId': r['runId']})
+    r = requests.delete(LOG_URL, params={'runId': runId})
     
     return 0
 
