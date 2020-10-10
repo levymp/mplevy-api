@@ -29,7 +29,7 @@ def main():
     runId = result_values['runId']
     # get file
 
-    r = requests.get(LOG_URL, params={'runId': runId})
+    r = requests.get(LOG_URL, params={'runId': runId, 'type': 'pkl'})
     file.close()
     # check response
     if r.status_code != 200:
