@@ -180,7 +180,7 @@ class mbot(Resource):
 
             if r == 0:
                 return jsonify({'runId': prod_file_info['runId'],
-                                'Results': prod_file_info['result']})
+                                'result': prod_file_info['result']})
             elif r == -1:
                 return abort(422, 'INTERNAL SERVER ERROR!')
             elif r == -2:

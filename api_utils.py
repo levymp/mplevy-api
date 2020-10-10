@@ -81,7 +81,7 @@ def update_mbot_table(botname, description,file_info, prod):
         return -1
     
     # COLUMNS TO APPEND
-    # ['BOT NAME', 'PICKLE NAME', 'PICKLE PATH', 'LOG NAME', 'LOG PATH', 'DESCRIPTION']
+    columns = ['BOT NAME', 'PICKLE NAME', 'PICKLE PATH', 'LOG NAME', 'LOG PATH', 'DESCRIPTION']
     
     # setup new row list to write to data frame
     new_row = []
@@ -126,7 +126,7 @@ def update_mbot_table(botname, description,file_info, prod):
         # write pickle
         df.to_pickle(pickle_path)
         file_info['runId'] = runId
-        file_info['result'] = new_row
+        file_info['result'] = dict(zip(columns, new_row))
         return 0
     else:
         print('TABLE NOT UPDATED!')
