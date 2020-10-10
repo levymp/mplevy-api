@@ -50,8 +50,8 @@ def get_file_info(time, prod):
     payload = {'log': {}, 'pkl_initial': {}, 'pkl_final': {}}
 
     # write time data
-    payload['TIME'] = time[2]
-    payload['datetime'] = time[3]
+    payload['DATE'] = time[2]
+    payload['DATETIME'] = time[3]
 
     # New log directory
     NEW_LOG = _LOG.joinpath(time[0])
