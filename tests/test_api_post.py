@@ -43,6 +43,8 @@ def main():
         fd.write(r.content)
     # read in df
     df = pd.read_pickle(file_path)
+    file_path.unlink(missing_ok=True)
+
     print(df.keys())
     print(df.loc[runId])
 
@@ -59,8 +61,10 @@ def main():
     # read in content
     with open(file_path, 'wb') as fd:
         fd.write(r.content)
+    
     # read in df
     df = pd.read_pickle(file_path)
+    file_path.unlink(missing_ok=True)
     print(df.keys())
     print(df.loc[runId])
 
