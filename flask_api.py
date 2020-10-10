@@ -15,7 +15,7 @@ from flask_restplus import Api, Resource, Namespace, fields, reqparse, apidoc
 
 # description of application
 description = '''This API endpoint accepts files sent after an MBOT completes
-a run. It then will write the file to a MongoDB database.'''
+a run.'''
 
 # start application
 flask_api = Flask(__name__, static_url_path='/api/')
@@ -180,7 +180,7 @@ class mbot(Resource):
 
             if r == 0:
                 return jsonify({'runId': prod_file_info['runId'],
-                                'result': prod_file_info['result']})
+                                prod_file_info['result']})
             elif r == -1:
                 return abort(422, 'INTERNAL SERVER ERROR!')
             elif r == -2:
@@ -206,7 +206,7 @@ class mbot(Resource):
     @mbot_namespace.response(500, 'INTERNAL SERVER ERROR')
     @cross_origin()
     def get(self):
-        '''RETURN LOG FILE BACK'''
+        '''RETRIEVE A LOG OR PARSED LOG FILE FROM A RUN'''
         if 'runId' not in request.args:
             abort(404, 'NO runId GIVEN!')
         elif 'type' not in request.args:
