@@ -274,7 +274,7 @@ directory_namespace = api.namespace('DIRECTORY',
 class directory(Resource):
     '''POST/GET LOG FILE'''
     # setup documentation
-    directory_payload = {'description': 'Pull down latest lookup table',
+    directory_payload = {'description': 'Retrieve latest lookup table (prod or backup)',
                             'name': 'database',
                             'type': 'string',
                             'in': 'query'}
