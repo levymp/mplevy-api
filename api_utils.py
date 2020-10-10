@@ -24,7 +24,7 @@ def get_time():
     # get directory and file_name formats
     yyyy_mm_dd = date.strftime('%Y_%m_%d')
     hh_mm_ss = date.strftime('%H:%M:%S')
-    full_time = date.strftime('%Y_%m_%d-%H:%M:%S')
+    full_time = date.strftime('%Y-%m-%d-%H:%M:%S')
 
     return [yyyy_mm_dd, hh_mm_ss, full_time, date]
 
