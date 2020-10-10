@@ -29,7 +29,7 @@ def main():
     # get file
 
     r = requests.get(LOG_URL, params={'runId': r['runId']})
-
+    file.close()
     # check response
     if r.status_code != 200:
         print(r.text)
@@ -63,7 +63,8 @@ def main():
 
     # delete file
     r = requests.delete(LOG_URL, params={'runId': r['runId']})
-
+    
+    return 0
 
 if __name__ == "__main__":
     main()
