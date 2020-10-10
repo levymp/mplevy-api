@@ -81,7 +81,7 @@ mbot_namespace = api.namespace('MBOT',
             ordered=True)
 
 @mbot_namespace.route('/api/mbot/v1/log')
-class api_mplevy(Resource):
+class mbot(Resource):
     '''POST/GET LOG FILE'''
 
     # setup documentation
@@ -193,7 +193,7 @@ class api_mplevy(Resource):
                             'type': type_payload})
     @mbot_namespace.response(200, 'Succcess')
     @mbot_namespace.response(404, 'INCORRECT TYPE/RUN ID GIVEN')
-    @mbot_namespace.response(406, 'Unknown Request')
+    @mbot_namespace.response(406, 'UNKNOWN REQUEST')
     @mbot_namespace.response(500, 'INTERNAL SERVER ERROR')
     @cross_origin()
     def get(self):
@@ -231,7 +231,7 @@ class api_mplevy(Resource):
     
     @mbot_namespace.doc(params={'runId': delete_payload})
     @mbot_namespace.response(200, 'Succcess')
-    @mbot_namespace.response(404, 'INCORRECT runId GIVEN')
+    @mbot_namespace.response(404, 'Incorrect runId GIVEN')
     @mbot_namespace.response(406, 'RunId was not deleted')
     @cross_origin()
     def delete(self):
@@ -246,6 +246,44 @@ class api_mplevy(Resource):
             return jsonify({'runId': runId, 'Sucess': True})
         else:
             return abort(406, 'runId ' + str(runId) + 'was not deleted')
+
+
+
+directory_namespace = api.namespace('DIRECTORY',
+            description= 'Get the Directory for MBOT Database (prod or backup)',
+            path='/', 
+            ordered=True)
+@directory_namespace.route('/api/mbot/v1/directory')
+class directory(Resource):
+    '''POST/GET LOG FILE'''
+    # setup documentation
+    directory_payload = {'description': 'Pull down latest lookup table',
+                            'name': 'database',
+                            'type': 'string',
+                            'in': 'query'}
+    # setup parameters
+    @directory_namespace.doc(params={'database': directory_payload})
+    # different responses
+    @mbot_namespace.response(200, 'Succcess')
+    @mbot_namespace.response(404, 'Incorrect Arguments')
+    @mbot_namespace.response(406, 'Unknown Request')
+    @cross_origin()
+    def get(self):
+        # check database in request args
+        # test/return files
+        if 'database' not in request.args:
+            abort(404, 'NO database name given!')
+
+        elif request.args['database'].lower() == 'prod':
+            table_path = Path('/home/michaellevy/data/prod/mbot/mbot_table.pkl')
+
+        elif request.args['database'].lower() == 'backup':
+            table_path = Path('/home/michaellevy/data/backup/mbot/mbot_table.pkl')
+
+        else:
+            abort(406, 'Unknown Request must only request "prod" or "dev" table')
+        
+        return send_from_directory(str(table_path.parent), str(table_path.name), mimetype='application/octet-stream')
 
 def main():
     flask_api.run(port=8505, debug=True)

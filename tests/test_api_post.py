@@ -4,43 +4,66 @@ import os
 from pathlib import Path
 
 
-#### RANDOM 
+# define urls
+# BASE_URL = 'https://api.mplevy.com/api/mbot/v1/'
 
+BASE_URL = 'http://127.0.0.1:8505/api/mbot/v1/log'
+LOG_URL = BASE_URL + 'log'
+DIRECTORY_URL = BASE_URL + 'directory'
 
 # # open file
+
+
+
 file = open(os.path.realpath('../../../MBOT-RPI/data/convex_10mx10m_5cm.log'), 'rb')
-# payload = {'logfile': file}
+file_payload = {'logfile': file}
+params_payload = {'name': 'CLASS FILE', 'description': 'convex_10mx10m_5cm' }
 
-# # get url
-# # url = 'https://api.mplevy.com/api/mbot/v1/log'
-url = 'http://127.0.0.1:8505/api/mbot/v1/log'
+# post file
+r = requests.post(LOG_URL, files=payload, params=params_payload)
+
+if r.status_code != 200:
+    print(r.text)
+    return -1
+
+# get file
+
+r = requests.get(LOG_URL, params={'runId': r['runId']})
+
+# check response
+if r.status_code != 200:
+    print(r.text)
+    return -1
+
+file_path = Path('/tmp/mbot_int.pkl')
+file_path.unlink(missing_ok=True)
+# read in content
+with open(file_path, 'wb') as fd:
+    fd.write(r.content)
+# read in df
+df = pd.read_pickle(file_path)
+print(df.keys())
+
+# get table
+r = requests.get(DIRECTORY_URL, params={'database': 'prod'})
+
+# check response
+if r.status_code != 200:
+    print(r.text)
+    return -1
+
+file_path = Path('/tmp/mbot_table.pkl')
+file_path.unlink(missing_ok=True)
+# read in content
+with open(file_path, 'wb') as fd:
+    fd.write(r.content)
+# read in df
+df = pd.read_pickle(file_path)
+print(df.keys())
+
+# delete file
+r = requests.delete(LOG_URL, params={'runId': r['runId']})
 
 
-# runId = 0
-# params = {'runId': runId, 'type': 'pkl'}
-delparam = {'runId': 0}
-
-# payload = {'logfile': file}
-# params_payload = {'name': 'CLASS FILE', 'description': 'convex_10mx10m_5cm' } 
-# r = requests.post(url, files=payload, params=params_payload)
-
-# r = requests.get(url, params=params)
-r = requests.delete(url, params=delparam)
-
-# # path to temporary file and delete previous ones
 
 
-# file_path = Path('/tmp/mbot_int')
-# file_path.unlink(missing_ok=True)
-# # read in content
-# with open(file_path, 'wb') as fd:
-#     fd.write(r.content)
-# # read in df
-# df = pd.read_pickle(file_path)
-
-# # delete file
-# file_path.unlink(missing_ok=False)
-# print(df.keys())
-print(r.status_code)
-print(r.json())
-file.close()
