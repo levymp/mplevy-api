@@ -88,7 +88,7 @@ class mbot(Resource):
     logfile_payload = {'description': 'Post must be a .log file.',
                             'name': 'logfile',
                             'type': 'file',
-                            'in': 'path'}
+                            'in': 'formData'}
     botname_payload = {'description': 'Botname',
                             'name': 'name',
                             'type': 'string',
