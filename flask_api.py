@@ -14,8 +14,16 @@ from flask_restplus import Api, Resource, Namespace, fields, reqparse, apidoc
 
 
 # description of application
-description = '''This API endpoint accepts files sent after an MBOT completes
-a run.'''
+description = '''This API endpoint accepts, parses, and stores log file for an MBOT.
+Go to [MBOT](https://mbot.mplevy.com/) to view the MBOT run details in the production database. The backupdatabase is not accessed from this endpoint. 
+
+***LOG FILES:***
+GET -> Will retrieve either a LOG or PICKLE (pandas) file for you to analyze. 
+POST -> Will push a log file to the database and it will parse it after the post.
+DELETE -> Will delete a runId from the production database. 
+***DIRECTORY:***
+GET -> This is just an easy way to get the directory for the prod or backup database. 
+'''
 
 # start application
 flask_api = Flask(__name__, static_url_path='/api/')
@@ -76,13 +84,13 @@ api = Api(
 
 # NAMESPACE FOR LOG FILE UPLOAD
 mbot_namespace = api.namespace('MBOT',
-            description= 'Upload and pull down log files from MBOT',
+            description= 'Upload log files (that will be parsed) and then download a log or pkl file.',
             path='/', 
             ordered=True)
 
 @mbot_namespace.route('/api/mbot/v1/log')
 class mbot(Resource):
-    '''POST/GET LOG FILE'''
+    '''MBOT Resource'''
 
     # setup documentation
     logfile_payload = {'description': 'Post must be a .log file.',
@@ -108,7 +116,7 @@ class mbot(Resource):
     @mbot_namespace.response(422, 'Incorrect file type')
     @cross_origin()
     def post(self):
-        '''POST A LOG FILE'''
+        '''POST A LOG FILE AND HAVE IT PARSED'''
         # check if file and name is in the request
         if 'logfile' not in request.files:
             return abort(406, 'Unknown Request')
@@ -206,7 +214,7 @@ class mbot(Resource):
     @mbot_namespace.response(500, 'INTERNAL SERVER ERROR')
     @cross_origin()
     def get(self):
-        '''RETRIEVE A LOG OR PARSED LOG FILE FROM A RUN'''
+        '''RETRIEVE A LOG OR PARSED PKL FILE FROM A RUN'''
         if 'runId' not in request.args:
             abort(404, 'NO runId GIVEN!')
         elif 'type' not in request.args:
@@ -259,7 +267,7 @@ class mbot(Resource):
 
 
 directory_namespace = api.namespace('DIRECTORY',
-            description= 'Get the Directory for MBOT Database (prod or backup)',
+            description= 'Get the directory for MBOT Database (prod or backup)',
             path='/', 
             ordered=True)
 @directory_namespace.route('/api/mbot/v1/directory')
@@ -278,6 +286,7 @@ class directory(Resource):
     @mbot_namespace.response(406, 'Unknown Request')
     @cross_origin()
     def get(self):
+        '''RETREIVE THE DATABASE DIRECTORY (PROD OR BACKUP)'''
         # check database in request args
         # test/return files
         if 'database' not in request.args:
