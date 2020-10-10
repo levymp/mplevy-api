@@ -14,14 +14,13 @@ from flask_restplus import Api, Resource, Namespace, fields, reqparse, apidoc
 
 
 # description of application
-description = '''This API endpoint accepts, parses, and stores log file for an MBOT.
-Go to [MBOT](https://mbot.mplevy.com/) to view the MBOT run details in the production database. The backupdatabase is not accessed from this endpoint. 
+description = '''This API endpoint accepts, parses, and stores log file for an MBOT. Go to [MBOT](https://mbot.mplevy.com/) to view the MBOT run details in the production database. The backupdatabase is not accessed from this endpoint. 
 
-***LOG FILES:***
+## ***LOG FILES:***
 GET -> Will retrieve either a LOG or PICKLE (pandas) file for you to analyze. 
 POST -> Will push a log file to the database and it will parse it after the post.
 DELETE -> Will delete a runId from the production database. 
-***DIRECTORY:***
+## ***DIRECTORY:***
 GET -> This is just an easy way to get the directory for the prod or backup database. 
 '''
 
