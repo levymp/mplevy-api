@@ -24,8 +24,9 @@ def get_time():
     # get directory and file_name formats
     yyyy_mm_dd = date.strftime('%Y_%m_%d')
     hh_mm_ss = date.strftime('%H:%M:%S')
+    full_time = date.strftime('%Y_%m_%d-%H:%M:%S')
 
-    return [yyyy_mm_dd, hh_mm_ss]
+    return [yyyy_mm_dd, hh_mm_ss, full_time, date]
 
 def get_file_info(time, prod):
     # return file name
@@ -47,6 +48,10 @@ def get_file_info(time, prod):
 
     # setup result
     payload = {'log': {}, 'pkl_initial': {}, 'pkl_final': {}}
+
+    # write time data
+    payload['TIME'] = time[2]
+    payload['datetime'] = time[3]
 
     # New log directory
     NEW_LOG = _LOG.joinpath(time[0])
@@ -81,7 +86,7 @@ def update_mbot_table(botname, description,file_info, prod):
         return -1
     
     # COLUMNS TO APPEND
-    columns = ['BOT NAME', 'PICKLE NAME', 'PICKLE PATH', 'LOG NAME', 'LOG PATH', 'DESCRIPTION']
+    columns = ['BOT NAME', 'PICKLE NAME', 'PICKLE PATH', 'LOG NAME', 'LOG PATH', 'DESCRIPTION', 'DATE', 'DATETIME']
     
     # setup new row list to write to data frame
     new_row = []
@@ -108,6 +113,9 @@ def update_mbot_table(botname, description,file_info, prod):
 
     # add description
     new_row.append(description)
+
+    new_row.append(file_info['DATE'])
+    new_row.append(file_info['DATETIME'])
 
     # check prod database
     if prod is True: 
