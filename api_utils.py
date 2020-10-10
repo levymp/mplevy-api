@@ -127,6 +127,7 @@ def update_mbot_table(botname, description,file_info, prod):
         df.to_pickle(_PICKLE)
         file_info['runId'] = runId
         file_info['result'] = new_row
+        print(new_row)
         return 0
     else:
         print('TABLE NOT UPDATED!')
