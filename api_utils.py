@@ -129,6 +129,7 @@ def update_mbot_table(botname, description,file_info, prod):
         file_info['result'] = new_row
         return 0
     else:
+        print('TABLE NOT UPDATED!')
         return -2
 
 def get_file_address(runId, column):
