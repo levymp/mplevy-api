@@ -167,7 +167,16 @@ class mbot(Resource):
 
             # test if pickle was written
             r = update_mbot_table(botname, description, backup_file_info, prod=False)
+            
+            # check write for backup
+            if r == -1:
+                return abort(422, 'INTERNAL SERVER ERROR!')
+            elif r == -2:
+                return abort(422, 'FAILED TO WRITE PICKLE!')
+
+            # write to prod
             r = update_mbot_table(botname, description, prod_file_info, prod=True)
+
 
             if r == 0:
                 return jsonify({'runId': prod_file_info['runId'],
