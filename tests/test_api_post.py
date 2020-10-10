@@ -44,9 +44,10 @@ def main():
     # read in df
     df = pd.read_pickle(file_path)
     print(df.keys())
+    print(df.loc[runId])
 
     # get table
-    r = requests.get(DIRECTORY_URL, params={'database': 'prod'})
+    r = requests.get(DIRECTORY_URL, params={'database': 'backup'})
 
     # check response
     if r.status_code != 200:
@@ -61,6 +62,7 @@ def main():
     # read in df
     df = pd.read_pickle(file_path)
     print(df.keys())
+    print(df.loc[runId])
 
     # delete file
     r = requests.delete(LOG_URL, params={'runId': runId})
