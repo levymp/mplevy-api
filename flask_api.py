@@ -22,6 +22,8 @@ POST -> Will push a log file to the database and it will parse it after the post
 DELETE -> Will delete a runId from the production database. 
 ## ***DIRECTORY:***
 GET -> This is just an easy way to get the directory for the prod or backup database. 
+
+This endpoint was developed by Michael Levy and source code is on [GitHub](https://github.com/levymp/mplevyapi).
 '''
 
 # start application
