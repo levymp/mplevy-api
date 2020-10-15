@@ -3,6 +3,7 @@ import os
 from time import sleep
 import subprocess
 from pathlib import Path
+from delete_key import pwd_key
 from shutil import move, copy
 from flask_swagger import swagger
 from flask_cors import CORS, cross_origin
@@ -246,8 +247,12 @@ class mbot(Resource):
                             'name': 'RunId',
                             'type': 'string',
                             'in': 'query'}
+    key_payload = {'description': 'Key to delete a Run',
+                            'name': 'key',
+                            'type': 'string',
+                            'in': 'query'}
     
-    @mbot_namespace.doc(params={'runId': delete_payload})
+    @mbot_namespace.doc(params={'runId': delete_payload, 'key': key_payload})
     @mbot_namespace.response(200, 'Succcess')
     @mbot_namespace.response(404, 'Incorrect runId GIVEN')
     @mbot_namespace.response(406, 'RunId was not deleted')
@@ -257,14 +262,16 @@ class mbot(Resource):
         # check if runId in argument
         if 'runId' not in request.args:
             abort(404, 'NO RUN ID GIVEN!')
-        
+        elif 'key' not request.args:
+            abort(404, 'NO KEY GIVEN! (ASK MICHAEL FOR IT)') 
         # find runId and write
         runId = int(request.args['runId'])
+        if request.args['key'] != pwd_key:
+            abort(406, 'INCORRECT KEY GIVEN (ASK MICHAEL FOR IT)')
         if not delete_run(runId):
             return jsonify({'runId': runId, 'Sucess': True})
         else:
             return abort(406, 'runId ' + str(runId) + 'was not deleted')
-
 
 
 directory_namespace = api.namespace('DIRECTORY',
