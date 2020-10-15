@@ -262,7 +262,7 @@ class mbot(Resource):
         # check if runId in argument
         if 'runId' not in request.args:
             abort(404, 'NO RUN ID GIVEN!')
-        elif 'key' not request.args:
+        elif 'key' not in request.args:
             abort(404, 'NO KEY GIVEN! (ASK MICHAEL FOR IT)') 
         # find runId and write
         runId = int(request.args['runId'])
